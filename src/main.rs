@@ -1,4 +1,5 @@
 use std::io::{self, Write};
+use std::path::Path;
 use std::thread;
 use std::thread::sleep;
 use std::time::{Duration};
@@ -7,10 +8,17 @@ use chrono::{Local, Timelike};
 use rodio::Decoder;
 use std::fs::File;
 
+use std::env;
+use std::fs;
+
 fn main() {
+
     let stdin = io::stdin();
     let input_minutes = &mut String::new();
     let mut num_of_minutes: i64 = 0;
+
+    print!("Minute >> ");
+    let _ = io::stdout().flush();
 
     match stdin.read_line(input_minutes) {
         Ok(_) => {
@@ -49,10 +57,32 @@ fn main() {
     handle.join().unwrap();
 
     // When it reaches here, start the notification by playing a song
-    let stream_handle =
-        rodio::OutputStreamBuilder::open_default_stream().expect("open default audio stream");
+    let stream_handle = rodio::OutputStreamBuilder::open_default_stream().expect("open default audio stream");
     let sink = rodio::Sink::connect_new(&stream_handle.mixer());
-    let file = File::open("Kevin_MacLeod_-_Canon_in_D_Major(chosic.com).mp3").unwrap();
+
+    let mut path = env::current_exe().unwrap();
+
+    let src = "Kevin_MacLeod_-_Canon_in_D_Major(chosic.com).mp3";
+    let debug_target = "target/debug/Kevin_MacLeod_-_Canon_in_D_Major(chosic.com).mp3";
+    let release_target = "target/release/Kevin_MacLeod_-_Canon_in_D_Major(chosic.com).mp3";
+
+    println!(""); // print a new line
+    for target in [debug_target, release_target] {
+        if !Path::new(target).exists() {
+            if let Err(e) = fs::copy(src, target) {
+                eprintln!("Failed to copy to {}: {}", target, e);
+            } else {
+                println!("Copied to {}", target);
+            }
+        } else {
+            println!("Already existed: {}", target);
+        }
+    }
+
+    path.pop(); // remove binary file name
+    path.push(src);
+
+    let file = File::open(path).unwrap();
     let source = Decoder::try_from(file).unwrap();
     sink.append(source);
     // stream_handle.mixer().add(source);
