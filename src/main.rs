@@ -50,7 +50,7 @@ fn main() {
         for i in (1..num_of_minutes + 1).rev() {
             print!("\r\x1B[2KTIME LEFT: {} minute", i);
             io::stdout().flush().unwrap();
-            sleep(Duration::from_secs(1));
+            sleep(Duration::from_secs(60));
         }
     });
 
