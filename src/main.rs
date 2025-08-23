@@ -50,7 +50,7 @@ fn main() {
         for i in (1..num_of_minutes + 1).rev() {
             print!("\r\x1B[2KTIME LEFT: {} minute", i);
             io::stdout().flush().unwrap();
-            sleep(Duration::from_secs(60));
+            sleep(Duration::from_secs(1));
         }
     });
 
@@ -62,20 +62,31 @@ fn main() {
 
     let mut path = env::current_exe().unwrap();
 
-    let src = "Kevin_MacLeod_-_Canon_in_D_Major(chosic.com).mp3";
+    let project_root = env!("CARGO_MANIFEST_DIR");
+    let src = format!("{}/Kevin_MacLeod_-_Canon_in_D_Major(chosic.com).mp3", project_root);
     let debug_target = "target/debug/Kevin_MacLeod_-_Canon_in_D_Major(chosic.com).mp3";
     let release_target = "target/release/Kevin_MacLeod_-_Canon_in_D_Major(chosic.com).mp3";
 
+
     println!(""); // print a new line
     for target in [debug_target, release_target] {
-        if !Path::new(target).exists() {
-            if let Err(e) = fs::copy(src, target) {
+        let target_path = Path::new(target);
+
+        if let Some(parent) = target_path.parent() {
+            if !parent.exists() {
+                if let Err(e) = fs::create_dir_all(parent) {
+                    eprintln!("Failed to create the path: {:?}", e);
+                    continue;
+                }
+            }
+        }
+
+        if !target_path.exists() {
+            if let Err(e) = fs::copy(&src, target) {
                 eprintln!("Failed to copy to {}: {}", target, e);
             } else {
                 println!("Copied to {}", target);
             }
-        } else {
-            println!("Already existed: {}", target);
         }
     }
 
