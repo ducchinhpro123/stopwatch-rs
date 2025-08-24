@@ -97,6 +97,9 @@ fn main() {
     let source = Decoder::try_from(file).unwrap();
     sink.append(source);
     // stream_handle.mixer().add(source);
+
+    println!("Playing music");
     sink.sleep_until_end();
+    sink.clear();
     // std::thread::sleep(std::time::Duration::from_secs(5));
 }
